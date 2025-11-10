@@ -34,6 +34,24 @@ def products_view(request: HttpRequest) -> JsonResponse:
             result.append(to_json(new_product))
 
         return JsonResponse(data={'result': result, 'count': len(result)}, status=201)
+    
+    if request.method == 'GET':
+        params = request.GET
+        products = Product.objects.filter(active=True)
+
+        category = params.get('category')
+        if category:
+            products = products.filter(category=category)
+
+        min_price = params.get('min_price')
+        max_price = params.get('max_price')
+        if min_price and max_price:
+            products = products.filter(price__gte=min_price, price__lte=max_price)
+        
+        result = []
+        for product in products:
+            result.append(to_json(product))
+
+        return JsonResponse(data={'count': len(result), 'result': result})
 
     return JsonResponse(data={})
-
